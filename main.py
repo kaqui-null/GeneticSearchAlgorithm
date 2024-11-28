@@ -15,7 +15,7 @@ class Individual:
 
 Genes = "01234"
 numberOfCities = 5
-INT_MAX = sys.maxsize # maximum signed integer value 2^64 - 1
+INT_MAX = sys.maxsize
 population_size = 10
 temperature = 10000
 
@@ -63,7 +63,12 @@ def cal_fitness(gnome, mp):
 def cooldown(temp):
     return (90*temp)/100
 
-def TSPUtil(mp):
+def one_point_crossover(p1, p2):
+    cross_point = random.randint(1, len(p1) - 1)
+    offspring = p1[:cross_point] + p2[cross_point:]
+    return offspring
+
+def main(mp):
     gen = 1
     gen_thres = 5
 
@@ -89,9 +94,15 @@ def TSPUtil(mp):
 
         for i in range(population_size):
             p1 = population[i]
+            
+            try:
+                p2 = population[i+1]
+            except IndexError:
+                p2 = population[1]
 
             while True:
-                new_g = mutate(p1.gnome)
+                new_g = one_point_crossover(p1.gnome, p2.gnome)
+                new_g = mutate(new_g)
                 new_gnome = Individual()
                 new_gnome.gnome = new_g
                 new_gnome.fitness = cal_fitness(new_gnome.gnome, mp)
@@ -100,7 +111,7 @@ def TSPUtil(mp):
                     new_population.append(new_gnome)
                     break
 
-                else: # disallows use of children that have too little of a deviation to parent in a negative way in e^(-dFitness)
+                else:
                     prob = pow(2.7,-1* ((float)(new_gnome.fitness - population[i].fitness)/temperature),)
                     if prob > 0.5:
                         new_population.append(new_gnome)
@@ -125,4 +136,4 @@ if __name__ == "__main__":
         [10, 8, 3, 0, 9],
         [5, INT_MAX, 3, 10, 0],
     ]
-    TSPUtil(mp)
+    main(mp)
